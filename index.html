@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iRacing Team Race Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-mark"></div>
+        <h1>Team Race Dashboard</h1>
+    </div>
+    <div class="race-status" id="race-status">
+        <span class="status-label">Not started</span>
+    </div>
+    <div class="topbar-actions">
+        <button id="reset-btn" class="btn btn-ghost" title="Wipe everything and start over">Reset</button>
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- ============== SETUP PANEL ============== -->
+    <section id="setup-panel" class="panel">
+        <h2 class="panel-title">Race Setup</h2>
+
+        <div class="setup-grid">
+            <div class="field">
+                <label>Car category</label>
+                <select id="car-category"></select>
+            </div>
+            <div class="field">
+                <label>Car</label>
+                <select id="car-model"></select>
+            </div>
+            <div class="field field-wide">
+                <label>Track</label>
+                <select id="track"></select>
+            </div>
+
+            <div class="field">
+                <label>Race format</label>
+                <div class="segmented" id="race-format">
+                    <button data-value="duration" class="active">Duration</button>
+                    <button data-value="laps">Laps</button>
+                </div>
+            </div>
+
+            <div class="field" id="duration-field">
+                <label>Duration (hh:mm)</label>
+                <input id="race-duration" type="text" placeholder="e.g. 6:00" value="2:00">
+            </div>
+
+            <div class="field" id="laps-field" style="display:none;">
+                <label>Total laps</label>
+                <input id="race-laps" type="number" min="1" placeholder="e.g. 60" value="60">
+            </div>
+        </div>
+
+        <h3 class="section-title">Drivers <span class="hint">up to 4</span></h3>
+        <div id="drivers-list" class="drivers-list"></div>
+        <button id="add-driver-btn" class="btn btn-secondary">+ Add driver</button>
+
+        <div class="setup-actions">
+            <button id="start-race-btn" class="btn btn-primary btn-large">Start race</button>
+        </div>
+    </section>
+
+    <!-- ============== RACE PANEL ============== -->
+    <section id="race-panel" class="panel" style="display:none;">
+
+        <div class="race-header">
+            <div class="race-header-info">
+                <div class="race-meta-line">
+                    <span id="race-car"></span>
+                    <span class="dot-sep">·</span>
+                    <span id="race-track"></span>
+                    <span id="current-driver-slot"></span>
+                </div>
+                <div class="race-counters">
+                    <div class="counter">
+                        <span class="counter-label">Time left</span>
+                        <span class="counter-value" id="time-left">--:--:--</span>
+                    </div>
+                    <div class="counter">
+                        <span class="counter-label">Elapsed</span>
+                        <span class="counter-value" id="time-elapsed">--:--:--</span>
+                    </div>
+                    <div class="counter">
+                        <span class="counter-label" id="laps-counter-label">Laps left</span>
+                        <span class="counter-value" id="laps-counter">--</span>
+                    </div>
+                    <div class="counter">
+                        <span class="counter-label">Total laps</span>
+                        <span class="counter-value" id="total-laps">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="race-header-actions">
+                <button id="end-race-btn" class="btn btn-ghost">End race</button>
+            </div>
+        </div>
+
+        <div class="race-grid">
+
+            <div class="col col-left">
+                <div class="card lap-input-card">
+                    <h3 class="card-title">Add lap</h3>
+                    <form id="lap-form" class="lap-form">
+                        <div class="field">
+                            <label>Driver</label>
+                            <div id="driver-pills" class="driver-pills"></div>
+                        </div>
+
+                        <div class="lap-row">
+                            <div class="field">
+                                <label>Lap time</label>
+                                <input id="lap-time" type="text" placeholder="M:SS.000" autocomplete="off">
+                            </div>
+                            <div class="field">
+                                <label>Position <span class="hint">optional</span></label>
+                                <input id="lap-position" type="number" min="1" placeholder="P">
+                            </div>
+                        </div>
+
+                        <div class="checkboxes">
+                            <label class="checkbox">
+                                <input type="checkbox" id="lap-pit">
+                                <span>Pit lap</span>
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="lap-dt">
+                                <span>Drive-through</span>
+                            </label>
+                        </div>
+
+                        <div class="field">
+                            <label>Notes <span class="hint">optional</span></label>
+                            <input id="lap-notes" type="text" maxlength="160" placeholder="e.g. close call in T7, rain starting…">
+                        </div>
+
+                        <div class="next-outlap-banner" id="next-outlap-banner" style="display:none;">
+                            Next lap will be marked as an <strong>outlap</strong>.
+                        </div>
+
+                        <div id="pit-position-banner" class="hint-banner" style="display:none;">
+                            Position is required for pit laps.
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">Add lap</button>
+                    </form>
+                </div>
+
+                <div class="card lap-list-card">
+                    <h3 class="card-title">Laps <span class="card-title-meta" id="lap-count-meta"></span></h3>
+                    <div id="lap-list" class="lap-list"></div>
+                </div>
+            </div>
+
+            <div class="col col-right">
+
+                <div class="card stats-card">
+                    <h3 class="card-title">Driver stats</h3>
+                    <div id="stats-table" class="stats-table"></div>
+                </div>
+
+                <div class="card stints-card">
+                    <h3 class="card-title">Stints <span class="card-title-meta" id="stints-count-meta"></span></h3>
+                    <div id="stints-list" class="stints-list"></div>
+                </div>
+
+                <div class="card chart-card">
+                    <h3 class="card-title">
+                        Race overview
+                        <span class="card-title-meta">— position over race · hover for details</span>
+                    </h3>
+                    <div class="chart-legend-extras">
+                        <span><span class="vline vline-fast"></span> fastest lap</span>
+                        <span><span class="ring ring-green"></span> driver best</span>
+                        <span><span class="dot dot-hollow"></span> out lap</span>
+                        <span><span class="vline vline-pit"></span> pit</span>
+                        <span><span class="vline vline-dt"></span> drive-through</span>
+                    </div>
+                    <div class="chart-wrapper chart-wrapper-xl">
+                        <canvas id="overview-chart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- toast container -->
+<div id="toast-host" class="toast-host"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
